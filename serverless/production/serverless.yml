@@ -1,0 +1,94 @@
+service: todo
+variablesResolutionMode: 20210326
+frameworkVersion: '3'
+
+plugins:
+    - serverless-offline
+    - serverless-plugin-split-stacks
+
+custom:
+    profile: ${self:service}-${sls:stage}
+    splitStacks:
+        perType: true
+
+provider:
+    name: aws
+    runtime: nodejs14.x
+    vpc:
+        securityGroupIds:
+            - !GetAtt AppVpc.DefaultSecurityGroup
+        subnetIds:
+            - !Ref LambdaSubnet
+    httpApi:
+        cors: true
+    lambdaHashingVersion: '20201221'
+    environment:
+        NODE_ENV: ${sls:stage}
+        NODE_CONFIG_DIR: /opt/config
+        NODE_PATH: /opt/node_modules
+        DB_NAME: ${ssm:${self:service}-${sls:stage}-db-name}
+        DB_HOST: !GetAtt RdsCluster.Endpoint.Address
+        DB_USER: ${ssm:${self:service}-${sls:stage}-db-username}
+        DB_PASSWORD: ${ssm:${self:service}-${sls:stage}-db-password}
+        ENVIRONMENT: ${ssm:${self:service}-${sls:stage}-environment}
+      
+layers:
+    main:
+        path: ./
+        package:
+            include:
+                - ./**
+
+resources:
+    - ${file(./aws/resources.yml)}
+
+package:
+    individually: true
+    exclude:
+        - ./**
+
+functions:
+   CreateTodo:
+    package:
+      include:
+        - ./lambdas/create-todo/index.js
+    handler: lambdas/create-todo/index.handler
+    layers:
+      - { Ref: MainLambdaLayer }
+    events:
+      - httpApi:
+          path: /todo
+          method: post
+  DeleteTodo:
+    package:
+      include:
+        - ./lambdas/delete-todo/index.js
+    handler: lambdas/delete-todo/index.handler
+    layers:
+      - { Ref: MainLambdaLayer }
+    events:
+      - httpApi:
+          path: /todo/{id}
+          method: delete
+  GetTodo:
+    package:
+      include:
+        - ./lambdas/get-todo/index.js
+    handler: lambdas/get-todo/index.handler
+    layers:
+      - { Ref: MainLambdaLayer }
+    events:
+      - httpApi:
+          path: /todo
+          method: get
+  UpdateTodo:
+    package:
+      include:
+        - ./lambdas/update-todo/index.js
+    handler: lambdas/update-todo/index.handler
+    layers:
+      - { Ref: MainLambdaLayer }
+    events:
+      - httpApi:
+          path: /todo/{id}
+          method: put

@@ -1,0 +1,32 @@
+{
+    "rules": {
+        // ESLint Version: 8.44.0
+        // Possible Problems
+
+        // Suggestions
+        "no-magic-numbers": ["off", {
+            "ignore": [],
+            "ignoreArrayIndexes": true,
+            "ignoreDefaultValues": false,
+            "ignoreClassFieldInitialValues": false,
+            "enforceConst": true,
+            "detectObjects": true
+        }]
+
+        // Layout & Formatting
+
+        // ESLint Plugin Import Version: 2.27.5
+        // Helpful Warnings
+
+        // Module Systems
+
+        // Static Analysis
+
+        // Style Guide
+
+        // TypeScript ESLint Version: 5.61.0
+        // TypeScript Supported Rules
+
+        // TypeScript Extension Rules
+    }
+}

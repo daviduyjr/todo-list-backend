@@ -1,0 +1,11 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - yarn install
+  pre_build:
+    commands:
+      - echo current environment is $env
+  build:
+    commands:
+      - make deploy stage=$env region=ap-southeast-1

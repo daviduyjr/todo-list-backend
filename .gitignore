@@ -1,0 +1,8 @@
+config/development.json
+config/test.json
+config/develop.json
+
+dist
+node_modules
+public
+src/public
