@@ -7,35 +7,7 @@ Resources:
             DBSubnetGroupName: ${self:service}-${sls:stage}-aurora-subnet-grp
             SubnetIds:
                 - !Ref DbSubnet
-                - !Ref DbSubnet2
-    # Configs
-    MediaBucketName:
-        Type: 'AWS::SSM::Parameter'
-        Properties:
-            Name: ${self:service}-${sls:stage}-bucket-name
-            Type: 'String'
-            Value: !Ref MediaBucket
-    # S3 Buckets
-    MediaBucket:
-        Type: 'AWS::S3::Bucket'
-        Properties:
-            BucketName: ${self:service}-${sls:stage}-medias
-            CorsConfiguration:
-                CorsRules:
-                    - AllowedHeaders:
-                          - '*'
-                      AllowedMethods:
-                          - 'POST'
-                          - 'GET'
-                          - 'PUT'
-                          - 'DELETE'
-                      AllowedOrigins:
-                          - '*'
-                      MaxAge: 3000
-                      ExposedHeaders:
-                          - 'x-amz-server-side-encryption'
-                          - 'x-amz-request-id'
-                          - 'x-amz-id-2'
+                - !Ref PublicSubnet
     # Networking
     AppVpc:
         Type: 'AWS::EC2::VPC'
@@ -44,12 +16,13 @@ Resources:
             Tags:
                 - Key: Name
                   Value: ${self:service}-${sls:stage}
+            EnableDnsHostnames: true
     ## Subnets
     DbSubnet:
         Type: 'AWS::EC2::Subnet'
         Properties:
             VpcId: !Ref AppVpc
-            CidrBlock: 10.0.0.0/28
+            CidrBlock: 10.0.0.0/24
             Tags:
                 - Key: Name
                   Value: ${self:service}-${sls:stage}-databases
@@ -58,35 +31,14 @@ Resources:
                     - 0
                     - Fn::GetAZs:
                           Ref: AWS::Region
-    DbSubnet2:
-        Type: 'AWS::EC2::Subnet'
-        Properties:
-            VpcId: !Ref AppVpc
-            CidrBlock: 10.0.0.16/28
-            Tags:
-                - Key: Name
-                  Value: ${self:service}-${sls:stage}-databases-2
-            AvailabilityZone:
-                Fn::Select:
-                    - 1
-                    - Fn::GetAZs:
-                          Ref: AWS::Region
     PublicSubnet:
         Type: 'AWS::EC2::Subnet'
         Properties:
             VpcId: !Ref AppVpc
-            CidrBlock: 10.0.0.32/28
+            CidrBlock: 10.0.32.0/24
             Tags:
                 - Key: Name
                   Value: ${self:service}-${sls:stage}-public
-    LambdaSubnet:
-        Type: 'AWS::EC2::Subnet'
-        Properties:
-            VpcId: !Ref AppVpc
-            CidrBlock: 10.0.1.0/24
-            Tags:
-                - Key: Name
-                  Value: ${self:service}-${sls:stage}-lambdas
             AvailabilityZone:
                 Fn::Select:
                     - 1
@@ -94,11 +46,6 @@ Resources:
                           Ref: AWS::Region
     AppElasticIp:
         Type: 'AWS::EC2::EIP'
-    NatGateway:
-        Type: 'AWS::EC2::NatGateway'
-        Properties:
-            AllocationId: !GetAtt AppElasticIp.AllocationId
-            SubnetId: !Ref PublicSubnet
     InternetGateway:
         Type: 'AWS::EC2::InternetGateway'
         Properties:
@@ -118,35 +65,22 @@ Resources:
             Tags:
                 - Key: Name
                   Value: ${self:service}-${sls:stage}-public-route-table
-    EgressRouteTable:
-        Type: 'AWS::EC2::RouteTable'
-        Properties:
-            VpcId: !Ref AppVpc
-            Tags:
-                - Key: Name
-                  Value: ${self:service}-${sls:stage}-egress-route-table
     PublicTraffic:
         Type: 'AWS::EC2::Route'
         Properties:
             DestinationCidrBlock: 0.0.0.0/0
             GatewayId: !Ref InternetGateway
             RouteTableId: !Ref PublicRouteTable
-    EgressTraffic:
-        Type: 'AWS::EC2::Route'
-        Properties:
-            DestinationCidrBlock: 0.0.0.0/0
-            NatGatewayId: !Ref NatGateway
-            RouteTableId: !Ref EgressRouteTable
     PublicSubnetAssoc:
         Type: 'AWS::EC2::SubnetRouteTableAssociation'
         Properties:
             RouteTableId: !Ref PublicRouteTable
             SubnetId: !Ref PublicSubnet
-    EgressSubnetAssoc:
+    DbSubnetAssoc:
         Type: 'AWS::EC2::SubnetRouteTableAssociation'
         Properties:
-            RouteTableId: !Ref EgressRouteTable
-            SubnetId: !Ref LambdaSubnet
+            RouteTableId: !Ref PublicRouteTable
+            SubnetId: !Ref DbSubnet
     # Security Groups
     # Remove SecurityGroupEgress in production?
     PostgresSecurityGroup:
@@ -159,34 +93,7 @@ Resources:
                 - IpProtocol: tcp
                   FromPort: 5432
                   ToPort: 5432
-                  CidrIp: !GetAtt AppVpc.CidrBlock
+                  CidrIp: 0.0.0.0/0
             SecurityGroupEgress:
                 - IpProtocol: -1
                   CidrIp: 0.0.0.0/0
-    SshSecurityGroup:
-        Type: 'AWS::EC2::SecurityGroup'
-        Properties:
-            GroupName: ${self:service}-${sls:stage}-ssh-sec-grp
-            GroupDescription: 'Set of rules for SSH'
-            VpcId: !Ref AppVpc
-            SecurityGroupIngress:
-                - IpProtocol: tcp
-                  FromPort: 22
-                  ToPort: 22
-                  CidrIp: 0.0.0.0/0
-    #EC2
-    Ec2Instance:
-        Type: AWS::EC2::Instance
-        Properties:
-            Tags:
-                - Key: 'Name'
-                  Value: ${self:service}-${sls:stage}-instance
-            #Ubuntu Server
-            ImageId: 'ami-07651f0c4c315a529'
-            KeyName: qhour-${sls:stage}-key
-            InstanceType: 't2.micro'
-            NetworkInterfaces:
-                - AssociatePublicIpAddress: true
-                  SubnetId: !Ref PublicSubnet
-                  GroupSet: [!Ref SshSecurityGroup]
-                  DeviceIndex: 0
