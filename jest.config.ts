@@ -3,7 +3,7 @@
 export default {
     automock: false,
     bail: 0,
-    cacheDirectory: '/tmp/<path>',
+    cacheDirectory: 'D:\\tmp\\jest_cache',
     clearMocks: false,
     collectCoverage: false,
     collectCoverageFrom: undefined,

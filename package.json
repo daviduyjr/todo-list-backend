@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node_modules/.bin/ts-node -r tsconfig-paths/register bin/www",
-    "test": "node_modules/.bin/jest --verbose --runInBand --forceExit",
-    "migrate-make": "node_modules/.bin/knex migrate:make",
-    "migrate-latest": "node_modules/.bin/knex migrate:latest"
+    "start": "node_modules\\.bin\\ts-node -r tsconfig-paths\\register bin\\www",
+    "test": "node_modules\\.bin\\jest --verbose --runInBand --forceExit",
+    "migrate-make": "node_modules\\.bin\\knex migrate:make",
+    "migrate-latest": "node_modules\\.bin\\knex migrate:latest"
   },
   "author": "",
   "license": "ISC",
