@@ -21,7 +21,6 @@ export default async function createTodo(req: Request, res: Response): Promise<R
             data: response,
         })
     } catch (error) {
-        console.log(error)
         const {
             code, message, details,
         } = error

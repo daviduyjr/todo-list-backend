@@ -32,6 +32,7 @@ describe('UpdateTodoEndpoint', (): void => {
                 },
                 body: {
                     when_done: new Date().toISOString(),
+                    name: 'fasdfasdf'
                 },
             }
             let capturedData: any

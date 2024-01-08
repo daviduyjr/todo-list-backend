@@ -1,0 +1,14 @@
+{
+  "app": {
+    "port": 3000,
+    "jwtSecret": "iohdvpa80830123bpiuyp078nhuhu"
+  },
+  "database": {
+    "name": "todolist",
+    "connection": {
+      "host": "localhost",
+      "user": "yourusername",
+      "password": "yourpassword"
+    }
+  }
+}

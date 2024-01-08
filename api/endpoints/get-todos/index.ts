@@ -13,7 +13,6 @@ import Types from '@src/types'
 
 export default async function getTodos(req: Request, res: Response): Promise<Response> {
     const getTodos: IExecutable<IParameters, IResponse> = container.get(Types.GetTodo)
-
     try {
         const params: IParameters = req.query;
         const response = await getTodos.execute({

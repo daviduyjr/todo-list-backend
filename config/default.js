@@ -23,6 +23,7 @@ module.exports = {
     },
     tables: {
       todos: 'todos',
+      users: 'users',
     },
     postgres_errors: {
       foreign_key: '23503',

@@ -11,6 +11,7 @@ import AbstractFeature from '@features/abstract'
 import Types from '@src/types'
 import DatabaseError from '@utils/database-error'
 import schema from './schema'
+import { IOptions } from '../interface'
 
 @injectable()
 export default class UpdateTodo extends AbstractFeature<IParameters, IResponse> {
@@ -20,15 +21,14 @@ export default class UpdateTodo extends AbstractFeature<IParameters, IResponse> 
         super(schema)
     }
 
-    async process(parameters: IParameters): IResponse {
+    async process(parameters: IParameters, options?: IOptions): IResponse {
         const {
             id,
             ...rest
         } = parameters
         const getTodo: ITodo[] = await this.todoDataSource.get({
-            id,
+            id: id
         })
-
         if (getTodo.length === 0) throw new DatabaseError({
             code: 'TODODOESNOTEXIST',
             message: 'Todo does not exist',
