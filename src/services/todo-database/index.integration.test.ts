@@ -67,7 +67,6 @@ describe('TodoService', (): void => {
 
         it('gets all the todos and the not deleted todos in the database', async (): Promise<void> => {
             const response = await todoDataSource.get({})
-            console.log('!! ~ file: index.integration.test.ts:70 ~ response:', response)
             expect(response.length).toBe(40)
         })
 

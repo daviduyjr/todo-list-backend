@@ -3,3 +3,5 @@ export type {
     IQueryTodoParameters,
     ITodoDataSource,
 } from './todo'
+export type { IUserDataSource } from './user'
+
